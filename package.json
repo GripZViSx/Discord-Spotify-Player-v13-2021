@@ -1,0 +1,19 @@
+{
+  "name": "spotify_player",
+  "version": "1.0.0",
+  "description": "A Spotify Player Using @Discord/Voice",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "KabirSingh",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/opus": "^0.5.3",
+    "@discordjs/voice": "^0.6.0",
+    "discord.js": "^13.1.0",
+    "ffmpeg-static": "^4.4.0",
+    "libsodium-wrappers": "^0.7.9",
+    "spotify-url-info": "^2.2.3"
+  }
+}
