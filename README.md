@@ -1,7 +1,7 @@
 <h1 align="center">
 Best-Advance-Discord.js-v13-handler</h1><br/>
 
-## ** If You Facing Bug Fix YourSelf Thanks
+##  If You Facing Bug Fix YourSelf Thanks
 ## **Installation | How to use the Bot**
 
  **1.** Install [node.js v16](https://nodejs.org/en/) or higher
