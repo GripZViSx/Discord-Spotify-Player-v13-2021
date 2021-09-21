@@ -6,7 +6,6 @@ const {
 } = require("@discordjs/voice");
 const config = require("./config.json");
 const client = new Client({
-  shards: "auto", //1700+ servers
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_VOICE_STATES,
