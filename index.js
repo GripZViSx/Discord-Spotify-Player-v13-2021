@@ -3,6 +3,8 @@ const {
   joinVoiceChannel,
   createAudioPlayer,
   createAudioResource,
+  NoSubscriberBehavior,
+  AudioPlayerStatus,
 } = require("@discordjs/voice");
 const config = require("./config.json");
 const client = new Client({
@@ -13,13 +15,23 @@ const client = new Client({
     Intents.FLAGS.GUILD_MEMBERS,
   ],
 });
+let player = createAudioPlayer({
+  behaviors: {
+    noSubscriber: NoSubscriberBehavior.Pause,
+  },
+});
 
-let player = createAudioPlayer();
 client.setMaxListeners(100);
 const { getData, getPreview, getTracks } = require("spotify-url-info");
+const { Joinvc } = require("./functions");
 
 client.on("ready", async () => {
   console.log(`Me is Online`);
+  client.user.setStatus("invisible");
+  client.user.setActivity(`Spotify Songs`, { type: "PLAYING" });
+  // if you want to join your to a Voice Channel when bot is online so use this function
+  const channel = client.channels.cache.get("886437128391782414");
+  Joinvc(channel,player)
 });
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
@@ -71,7 +83,7 @@ client.on("messageCreate", (message) => {
             let playembed = new MessageEmbed()
               .setColor("BLURPLE")
               .setDescription(
-                `**Started Playing**\n [${newsong.title}](${newsong.link}) [<@${message.author.id}>] \n Author :- \`${newsong.artist}\` - Duraction :- \`${newsong.type}\``
+                `**Started Playing**\n [${newsong.title}](${newsong.link}) [<@${message.author.id}>] \n Author :- \`${newsong.artist}\` - Uploaded :- \`${newsong.date}\``
               )
               .setThumbnail(newsong.image);
             message.channel.send({ embeds: [playembed] });
@@ -87,67 +99,12 @@ client.on("messageCreate", (message) => {
           });
         });
         break;
-      case "playlist":
-        // let { channel } = message.member.voice;
-        if (!channel)
-          return message.channel.send(`** Please Join a Voice Channel**`);
-        // let song = args.join(" ");
-        if (!song)
-          return message.channel.send(`**Please Give me Playlist Link**`);
-        getTracks(song).then((data) => {
-          data.map((newsong) => {
-            let VoiceConnection = joinVoiceChannel({
-              channelId: channel.id,
-              guildId: channel.guild.id,
-              adapterCreator: channel.guild.voiceAdapterCreator,
-            });
-            const resource = createAudioResource(newsong.preview_url, {
-              inlineVolume: true,
-            });
-            resource.volume.setVolume(0.5);
-            VoiceConnection.subscribe(player);
-            player.play(resource);
-            // player event
-            let author;
-            newsong.artists.map((val) => {
-              author = val.name;
-            });
-            player.on("subscribe", () => {
-              let playembed = new MessageEmbed()
-                .setColor("BLURPLE")
-                .setDescription(
-                  `**Started Playing**\n [${newsong.name}](${newsong.uri}) [<@${
-                    message.author.id
-                  }>] \n Author :- \`${author}\` - Duraction :- \`${newsong.duration_ms.toLocaleString()}\``
-                )
-                .setThumbnail(
-                  `https://api.spotify.com/v1/playlists/${newsong.id}/images`
-                );
-              message.channel.send({ embeds: [playembed] });
-            });
-            player.on("unsubscribe", () => {
-              let endembed = new MessageEmbed().setDescription(
-                `\` Song Ended \``
-              );
-              message.channel.send({ embeds: [endembed] });
-            });
-            player.on("error", (error) => {
-              console.error(
-                "Error:",
-                error.message,
-                "with track",
-                newsong.title
-              );
-            });
-          });
-        });
-        break;
       case "stop":
-        player.stop(true);
+        player.stop();
         message.channel.send(`** Song Stopped By ** <@${message.author.id}>`);
         break;
       case "pause":
-        player.pause(true);
+        player.pause();
         message.channel.send(`** Song Paused By ** <@${message.author.id}>`);
         break;
       case "unpause":
@@ -161,7 +118,6 @@ client.on("messageCreate", (message) => {
           guildId: channel.guild.id,
           adapterCreator: channel.guild.voiceAdapterCreator,
         });
-        let player = createAudioPlayer();
         VoiceConnection.subscribe(player);
         break;
       case "help":
@@ -175,12 +131,6 @@ client.on("messageCreate", (message) => {
             {
               name: "play",
               value: "Play Spotify Url Song",
-              inline: true,
-            },
-            {
-              name: "playlist",
-              value:
-                "Play Spotify Url Playllist ( Currently Not Play All Song OF Playlist)",
               inline: true,
             },
             {
@@ -227,5 +177,6 @@ client.on("messageCreate", (message) => {
     console.error(e);
   }
 });
+
 
 client.login(config.token);
